@@ -237,12 +237,28 @@
         
         .debug-info {
             margin-top: 20px;
-            padding: 10px;
+            padding: 15px;
             background: #f8f9fa;
             border-radius: 8px;
+            font-size: 13px;
+            color: #495057;
+            border-left: 4px solid #667eea;
+        }
+        
+        .debug-info h4 {
+            margin-bottom: 10px;
+            color: #667eea;
+            font-size: 14px;
+        }
+        
+        .debug-info ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .debug-info li {
+            margin-bottom: 5px;
             font-size: 12px;
-            color: #666;
-            display: none;
         }
     </style>
 </head>
@@ -338,14 +354,14 @@
             </div>
         </div>
         
+        <div class="debug-info">
+            <h4><i class="fas fa-info-circle"></i> Status Kategori</h4>
+            <div id="debugContent">Memuat kategori...</div>
+        </div>
+        
         <div class="footer">
             <p>© 2026 AUTOFINT LITE - Money Tracker</p>
             <p>Data tersimpan secara realtime ke Google Sheets</p>
-        </div>
-        
-        <div class="debug-info" id="debugInfo">
-            <strong>📊 Status Kategori:</strong>
-            <div id="debugContent">Memuat kategori...</div>
         </div>
     </div>
 
@@ -362,6 +378,8 @@
         // ========================================
         async function loadKategori() {
             try {
+                console.log("Memuat kategori dari API...");
+                
                 const response = await fetch(API_URL + "?action=getKategori");
                 const result = await response.json();
                 
@@ -371,27 +389,87 @@
                     kategoriData = result.kategori;
                     
                     // Update debug info
-                    document.getElementById('debugContent').innerHTML = `
-                        <div style="margin-top: 8px; padding: 8px; background: white; border-radius: 5px;">
-                            <div>✅ <strong>Pemasukan:</strong> ${kategoriData.income.length} kategori</div>
-                            <div>✅ <strong>Pengeluaran:</strong> ${kategoriData.expense.length} kategori</div>
-                        </div>
-                    `;
+                    updateDebugInfo();
                     
+                    // Update dropdown dengan kategori Income (default)
                     updateKategoriDropdown("Income");
+                    
                     showAlert("✅ Kategori berhasil dimuat!", "success");
+                    
+                    console.log("Income categories:", kategoriData.income);
+                    console.log("Expense categories:", kategoriData.expense);
                 } else {
                     throw new Error(result.message || "Gagal memuat kategori");
                 }
             } catch (error) {
-                showAlert("❌ Gagal memuat kategori: " + error.message, "error");
-                document.getElementById('debugContent').innerHTML = `
-                    <div style="margin-top: 8px; padding: 8px; background: #ffebee; border-radius: 5px; color: #c62828;">
-                        ❌ Error: ${error.message}
-                    </div>
-                `;
                 console.error("Error loading kategori:", error);
+                
+                showAlert("❌ Gagal memuat kategori: " + error.message, "error");
+                
+                // Fallback kategori default jika API error
+                kategoriData = {
+                    income: [
+                        "Gaji / Pendapatan Utama",
+                        "Bonus",
+                        "Komisi / Freelance",
+                        "Penjualan Produk",
+                        "Investasi / Dividen",
+                        "Bunga Tabungan",
+                        "Uang Sewa Masuk",
+                        "Hadiah / Reward",
+                        "Refund / Pengembalian Dana",
+                        "Lain-lain (Pemasukan Tambahan)"
+                    ],
+                    expense: [
+                        "Makan & Minum",
+                        "Transportasi",
+                        "Tempat Tinggal (Sewa / Cicilan Rumah)",
+                        "Listrik, Air, Internet",
+                        "Belanja Harian",
+                        "Hiburan / Rekreasi",
+                        "Pendidikan",
+                        "Asuransi",
+                        "Kesehatan / Obat-obatan",
+                        "Donasi / Sedekah",
+                        "Cicilan / Hutang",
+                        "Tabungan / Investasi",
+                        "Perawatan Diri",
+                        "Pakaian",
+                        "Biaya Anak / Keluarga",
+                        "Hewan Peliharaan",
+                        "Pajak / Administrasi",
+                        "Keperluan Kantor / Bisnis",
+                        "Langganan (Netflix, Spotify, dll)",
+                        "Lain-lain (Pengeluaran Tak Terduga)"
+                    ]
+                };
+                
+                updateDebugInfo();
+                updateKategoriDropdown("Income");
             }
+        }
+        
+        // ========================================
+        // UPDATE DEBUG INFO
+        // ========================================
+        function updateDebugInfo() {
+            const debugDiv = document.getElementById('debugContent');
+            
+            let incomeList = kategoriData.income.map((kat, i) => `<li>${i + 1}. ${kat}</li>`).join('');
+            let expenseList = kategoriData.expense.map((kat, i) => `<li>${i + 1}. ${kat}</li>`).join('');
+            
+            debugDiv.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <strong style="color: #28a745;">💰 PEMASUKAN (${kategoriData.income.length})</strong>
+                        <ul>${incomeList || '<li>Tidak ada kategori</li>'}</ul>
+                    </div>
+                    <div>
+                        <strong style="color: #dc3545;">💸 PENGELUARAN (${kategoriData.expense.length})</strong>
+                        <ul>${expenseList || '<li>Tidak ada kategori</li>'}</ul>
+                    </div>
+                </div>
+            `;
         }
         
         // ========================================
@@ -402,19 +480,20 @@
             select.innerHTML = '<option value="">Pilih kategori...</option>';
             
             const kategoriList = type === "Income" ? kategoriData.income : kategoriData.expense;
+            const icon = type === "Income" ? "💰" : "💸";
             
             if (kategoriList.length === 0) {
                 const defaultKategori = type === "Income" ? "Gaji / Pendapatan Utama" : "Makan & Minum";
                 const option = document.createElement("option");
                 option.value = defaultKategori;
-                option.textContent = defaultKategori;
+                option.textContent = `${icon} ${defaultKategori}`;
                 select.appendChild(option);
             } else {
                 kategoriList.forEach(kat => {
                     if (kat && kat.trim() !== "") {
                         const option = document.createElement("option");
                         option.value = kat;
-                        option.textContent = kat;
+                        option.textContent = `${icon} ${kat}`;
                         select.appendChild(option);
                     }
                 });
@@ -540,7 +619,8 @@
         // LOAD KATEGORI SAAT HALAMAN DIBUKA
         // ========================================
         window.addEventListener('load', function() {
-            setTimeout(loadKategori, 300);
+            console.log("Halaman dimuat, memuat kategori...");
+            setTimeout(loadKategori, 500);
         });
     </script>
 </body>
