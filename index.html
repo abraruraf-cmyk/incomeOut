@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTOFINT LITE - Catat Keuangan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-icon {
+            font-size: 48px;
+            color: #667eea;
+        }
+        
+        .switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .switch-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .switch-btn.income {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        
+        .switch-btn.expense {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        
+        .switch-btn.active.income {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .switch-btn.active.expense {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+            color: white;
+            border-color: #dc3545;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .data-list {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .data-list h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .data-item {
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .data-item strong {
+            color: #667eea;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <h1>AUTOFINT LITE</h1>
+            <p class="subtitle">Catat Keuangan Harian Anda Secara Realtime</p>
+        </div>
+        
+        <div id="alert-container"></div>
+        
+        <form id="keuanganForm">
+            <div class="form-group">
+                <label for="tanggal">
+                    <i class="fas fa-calendar-alt"></i> Tanggal
+                </label>
+                <input type="date" id="tanggal" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-exchange-alt"></i> Jenis Transaksi
+                </label>
+                <div class="switch">
+                    <button type="button" class="switch-btn income active" data-type="Income">
+                        <i class="fas fa-arrow-up"></i> Pemasukan
+                    </button>
+                    <button type="button" class="switch-btn expense" data-type="Expense">
+                        <i class="fas fa-arrow-down"></i> Pengeluaran
+                    </button>
+                </div>
+                <input type="hidden" id="jenis" value="Income">
+            </div>
+            
+            <div class="form-group">
+                <label for="kategori">
+                    <i class="fas fa-tags"></i> Kategori
+                </label>
+                <select id="kategori" required>
+                    <option value="">Pilih kategori...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="jumlah">
+                    <i class="fas fa-money-bill-wave"></i> Jumlah (Rp)
+                </label>
+                <input type="number" id="jumlah" placeholder="Contoh: 50000" required min="1" step="1000">
+            </div>
+            
+            <div class="form-group">
+                <label for="deskripsi">
+                    <i class="fas fa-sticky-note"></i> Deskripsi / Items
+                </label>
+                <textarea id="deskripsi" placeholder="Catatan tambahan (opsional)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="nama_merchant">
+                    <i class="fas fa-store"></i> Nama Merchant (Opsional)
+                </label>
+                <input type="text" id="nama_merchant" placeholder="Contoh: Toko ABC">
+            </div>
+            
+            <div class="form-group">
+                <label for="alamat_merchant">
+                    <i class="fas fa-map-marker-alt"></i> Alamat Merchant (Opsional)
+                </label>
+                <input type="text" id="alamat_merchant" placeholder="Contoh: Jl. Merdeka No. 123">
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                <i class="fas fa-paper-plane"></i> Simpan Data
+            </button>
+        </form>
+        
+        <div class="data-list">
+            <h3>
+                <i class="fas fa-database"></i> Data Tersimpan Otomatis
+            </h3>
+            <div class="data-item">
+                <strong>📍 Lokasi:</strong> Google Sheets Anda
+            </div>
+            <div class="data-item">
+                <strong>📊 Laporan:</strong> Tab Laporan Bulanan & Tahunan
+            </div>
+            <div class="data-item">
+                <strong>📈 Grafik:</strong> Pie Chart & Line Chart Otomatis
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2026 AUTOFINT LITE - Money Tracker</p>
+            <p>Data tersimpan secara realtime ke Google Sheets</p>
+        </div>
+        
+        <div class="debug-info" id="debugInfo">
+            <strong>📊 Status Kategori:</strong>
+            <div id="debugContent">Memuat kategori...</div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // API URL BARU ANDA
+        // ========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbx8GB5xbGXd-YOH5JDS0ilkQfNhZcTtC1CLeUNCIu9-tm-prEYofSwXc2-T-4evw1S1sw/exec";
+        
+        let kategoriData = { income: [], expense: [] };
+        
+        // ========================================
+        // LOAD KATEGORI DARI GOOGLE SHEETS
+        // ========================================
+        async function loadKategori() {
+            try {
+                const response = await fetch(API_URL + "?action=getKategori");
+                const result = await response.json();
+                
+                console.log("API Response:", result);
+                
+                if (result.status === "success") {
+                    kategoriData = result.kategori;
+                    
+                    // Update debug info
+                    document.getElementById('debugContent').innerHTML = `
+                        <div style="margin-top: 8px; padding: 8px; background: white; border-radius: 5px;">
+                            <div>✅ <strong>Pemasukan:</strong> ${kategoriData.income.length} kategori</div>
+                            <div>✅ <strong>Pengeluaran:</strong> ${kategoriData.expense.length} kategori</div>
+                        </div>
+                    `;
+                    
+                    updateKategoriDropdown("Income");
+                    showAlert("✅ Kategori berhasil dimuat!", "success");
+                } else {
+                    throw new Error(result.message || "Gagal memuat kategori");
+                }
+            } catch (error) {
+                showAlert("❌ Gagal memuat kategori: " + error.message, "error");
+                document.getElementById('debugContent').innerHTML = `
+                    <div style="margin-top: 8px; padding: 8px; background: #ffebee; border-radius: 5px; color: #c62828;">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+                console.error("Error loading kategori:", error);
+            }
+        }
+        
+        // ========================================
+        // UPDATE DROPDOWN KATEGORI
+        // ========================================
+        function updateKategoriDropdown(type) {
+            const select = document.getElementById("kategori");
+            select.innerHTML = '<option value="">Pilih kategori...</option>';
+            
+            const kategoriList = type === "Income" ? kategoriData.income : kategoriData.expense;
+            
+            if (kategoriList.length === 0) {
+                const defaultKategori = type === "Income" ? "Gaji / Pendapatan Utama" : "Makan & Minum";
+                const option = document.createElement("option");
+                option.value = defaultKategori;
+                option.textContent = defaultKategori;
+                select.appendChild(option);
+            } else {
+                kategoriList.forEach(kat => {
+                    if (kat && kat.trim() !== "") {
+                        const option = document.createElement("option");
+                        option.value = kat;
+                        option.textContent = kat;
+                        select.appendChild(option);
+                    }
+                });
+            }
+        }
+        
+        // ========================================
+        // SWITCH ANTARA INCOME/EXPENSE
+        // ========================================
+        document.querySelectorAll(".switch-btn").forEach(btn => {
+            btn.addEventListener("click", function() {
+                // Remove active from all buttons
+                document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
+                
+                // Add active to clicked button
+                this.classList.add("active");
+                
+                // Update hidden input
+                const type = this.getAttribute("data-type");
+                document.getElementById("jenis").value = type;
+                
+                // Update dropdown
+                updateKategoriDropdown(type);
+                
+                // Show alert
+                const jenisText = type === 'Income' ? 'Pemasukan 💰' : 'Pengeluaran 💸';
+                showAlert(`🔄 Beralih ke: ${jenisText}`, "success");
+            });
+        });
+        
+        // ========================================
+        // FORM SUBMIT
+        // ========================================
+        document.getElementById("keuanganForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById("submitBtn");
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Validasi
+                if (!document.getElementById("kategori").value) {
+                    throw new Error("Pilih kategori terlebih dahulu!");
+                }
+                
+                const jumlah = parseInt(document.getElementById("jumlah").value);
+                if (isNaN(jumlah) || jumlah <= 0) {
+                    throw new Error("Jumlah harus lebih dari 0!");
+                }
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="loading"></span> Menyimpan...';
+                
+                const formData = {
+                    tanggal: document.getElementById("tanggal").value,
+                    jenis: document.getElementById("jenis").value,
+                    kategori: document.getElementById("kategori").value,
+                    jumlah: jumlah,
+                    deskripsi: document.getElementById("deskripsi").value || "-",
+                    nama_merchant: document.getElementById("nama_merchant").value || "",
+                    alamat_merchant: document.getElementById("alamat_merchant").value || "",
+                    id_transaksi: "txn_" + Date.now()
+                };
+                
+                console.log("Submitting ", formData);
+                
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                console.log("API Response:", result);
+                
+                if (result.status === "success") {
+                    showAlert("✅ Data berhasil disimpan ke Google Sheets!", "success");
+                    
+                    // Reset form
+                    document.getElementById("keuanganForm").reset();
+                    document.getElementById("tanggal").valueAsDate = new Date();
+                    
+                    // Scroll ke atas
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    throw new Error(result.message || "Terjadi kesalahan");
+                }
+                
+            } catch (error) {
+                showAlert("❌ " + error.message, "error");
+                console.error("Error:", error);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+        
+        // ========================================
+        // SHOW ALERT
+        // ========================================
+        function showAlert(message, type) {
+            const container = document.getElementById("alert-container");
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                container.innerHTML = "";
+            }, 5000);
+        }
+        
+        // ========================================
+        // SET TANGGAL DEFAULT HARI INI
+        // ========================================
+        document.getElementById("tanggal").valueAsDate = new Date();
+        
+        // ========================================
+        // LOAD KATEGORI SAAT HALAMAN DIBUKA
+        // ========================================
+        window.addEventListener('load', function() {
+            setTimeout(loadKategori, 300);
+        });
+    </script>
+</body>
+</html>
